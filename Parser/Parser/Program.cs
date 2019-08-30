@@ -16,9 +16,8 @@ namespace ConsoleApp33
         static void Main()
         {
             var url = "https://www.facebook.com/ulanasuprun/posts/2420760401541846";
-            var url2 = "https://www.facebook.com/ulanasuprun/posts/2423035161314370";
             HtmlWeb web = new HtmlWeb();
-            HtmlDocument loadHTML = web.Load(url2);
+            HtmlDocument loadHTML = web.Load(url);
             string parsingResult = "";
             string newLine = "\n";
             HtmlNodeCollection htmlNodes = loadHTML.DocumentNode.SelectNodes("//div[@class = 'hidden_elem']");
