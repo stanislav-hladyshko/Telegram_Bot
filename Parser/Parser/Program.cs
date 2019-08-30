@@ -17,16 +17,19 @@ namespace ConsoleApp33
         {
             var url = "https://www.facebook.com/ulanasuprun/posts/2420760401541846";
             HtmlWeb web = new HtmlWeb();
-            HtmlDocument doc = web.Load(url);
+            HtmlDocument loadHTML = web.Load(url);
+            string parsingResult = "";
+            string newLine = "\n";
+            
+            var parsingNode = loadHTML.DocumentNode.SelectSingleNode("//div[@class = 'hidden_elem']");
+            var temporaryStringResult = parsingNode.InnerHtml;
 
-            var node = doc.DocumentNode.SelectSingleNode("//code[@id='u_0_w']");
-            var code = node.InnerHtml;
+            temporaryStringResult = temporaryStringResult.Replace("-->", string.Empty);
+            temporaryStringResult = temporaryStringResult.Replace("<!--", string.Empty);
 
-            code = code.Replace("-->", string.Empty);
-            code = code.Replace("<!--", string.Empty);
+            loadHTML.LoadHtml(temporaryStringResult);
 
-            doc.LoadHtml(code);
-            HtmlNode postMessageNode = doc.DocumentNode.SelectSingleNode("//div[@data-testid='post_message']");
+            HtmlNode postMessageNode = loadHTML.DocumentNode.SelectSingleNode("//div[@data-testid='post_message']");
             string resultContentOfHtmlParsing = "";
             string temp = "\n";
             foreach (HtmlNode node2 in postMessageNode.ChildNodes)
