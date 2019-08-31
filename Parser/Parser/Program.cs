@@ -15,11 +15,13 @@ namespace ConsoleApp33
     {
         static void Main()
         {
-            var url = "https://www.facebook.com/ulanasuprun/posts/2420760401541846";
+            var url = "https://www.facebook.com/ulanasuprun/posts/2423892147895338";
             HtmlWeb web = new HtmlWeb();
             HtmlDocument loadHTML = web.Load(url);
+
             string parsingResult = "";
             string newLine = "\n";
+
             HtmlNodeCollection htmlNodes = loadHTML.DocumentNode.SelectNodes("//div[@class = 'hidden_elem']");
             foreach (HtmlNode node in htmlNodes)
                 parsingResult += newLine + node.InnerHtml;
@@ -27,6 +29,7 @@ namespace ConsoleApp33
             parsingResult = parsingResult.Replace("<!--", string.Empty);
             parsingResult = parsingResult.Replace("<br />", "\n");
             loadHTML.LoadHtml(parsingResult);
+            ParseImage(loadHTML);
             HtmlNode post_messageNode = loadHTML.DocumentNode.SelectSingleNode("//div[@data-testid='post_message']");
             string resultOfHtmlParsing = "";
             foreach (HtmlNode node2 in post_messageNode.ChildNodes)
@@ -34,6 +37,18 @@ namespace ConsoleApp33
             File.WriteAllText(@"c:\Users\Admin\Desktop\new_file.txt", resultOfHtmlParsing);
             string printTemp = File.ReadAllText(@"c:\Users\Admin\Desktop\new_file.txt");
             Console.Read();
+
+        }
+        static List<string> ParseImage(HtmlDocument htmlDocument)
+        {
+            List<string> parsedImageUrlArray = new List<string>();
+            HtmlNodeCollection htmlNodes = htmlDocument.DocumentNode.SelectNodes("//a/@data-ploi");
+            foreach (HtmlNode node in htmlNodes)
+            {
+                string url = node.GetAttributeValue("data-ploi", "666").Replace("amp;", string.Empty);
+                parsedImageUrlArray.Add(url);
+            }
+            return parsedImageUrlArray;
         }
     }
 }
