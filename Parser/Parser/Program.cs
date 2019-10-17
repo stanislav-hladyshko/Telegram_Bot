@@ -1,13 +1,9 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using HtmlAgilityPack;
-using System.IO;
-using System.Xml;
-using System.ComponentModel;
-
+using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace ConsoleApp33
 {
@@ -15,30 +11,60 @@ namespace ConsoleApp33
     {
         static void Main()
         {
-            var url = "https://www.facebook.com/ulanasuprun/posts/2423892147895338";
+            ParserMethod();
+            Console.Read();
+        }
+        static void ParserMethod()
+        {
+            Console.OutputEncoding = Encoding.UTF8;
+            var url = "https://www.facebook.com/ulanasuprun/posts/2458567217761164";
             HtmlWeb web = new HtmlWeb();
-            HtmlDocument loadHTML = web.Load(url);
-
+            HtmlDocument loadedPage = web.Load(url);
             string parsingResult = "";
             string newLine = "\n";
-
-            HtmlNodeCollection htmlNodes = loadHTML.DocumentNode.SelectNodes("//div[@class = 'hidden_elem']");
+            HtmlNodeCollection htmlNodes = loadedPage.DocumentNode.SelectNodes("//div[@class = 'hidden_elem']");
             foreach (HtmlNode node in htmlNodes)
                 parsingResult += newLine + node.InnerHtml;
             parsingResult = parsingResult.Replace("-->", string.Empty);
             parsingResult = parsingResult.Replace("<!--", string.Empty);
             parsingResult = parsingResult.Replace("<br />", "\n");
-            loadHTML.LoadHtml(parsingResult);
-            ParseImage(loadHTML);
-            HtmlNode post_messageNode = loadHTML.DocumentNode.SelectSingleNode("//div[@data-testid='post_message']");
+
+            loadedPage.LoadHtml(parsingResult);
+            ParseImage(loadedPage);
+            HtmlNode post_messageNode = loadedPage.DocumentNode.SelectSingleNode("//div[@data-testid='post_message']");
+
+            urlAndNameConverter(post_messageNode.InnerHtml);
+
             string resultOfHtmlParsing = "";
             foreach (HtmlNode node2 in post_messageNode.ChildNodes)
-                resultOfHtmlParsing += newLine + node2.InnerText;
-            File.WriteAllText(@"c:\Users\Admin\Desktop\new_file.txt", resultOfHtmlParsing);
-            string printTemp = File.ReadAllText(@"c:\Users\Admin\Desktop\new_file.txt");
-            Console.Read();
+                resultOfHtmlParsing += node2.InnerText.TrimStart(' ') + newLine;
 
+            List<string> arr2 = TextDevidingOnParts(resultOfHtmlParsing);
+            foreach (string item in arr2)
+                Console.WriteLine(item);
+            Console.Read();
         }
+        static void urlAndNameConverter(string postHtmlString)
+        {
+            HtmlDocument aTagDocument = new HtmlDocument();
+            int firstIndex, lastIndex = 0;
+            while (true)
+            {
+                if (postHtmlString.Contains("<a"))
+                {
+                    firstIndex = postHtmlString.IndexOf("<a");
+                    lastIndex = postHtmlString.IndexOf("</a>") + 4;
+                }
+                else
+                    break;
+                string aTag = postHtmlString.Substring(firstIndex, lastIndex - firstIndex);
+                aTagDocument.LoadHtml(aTag);
+                HtmlNode htmlNode = aTagDocument.DocumentNode.FirstChild;
+                string result = $"[{htmlNode.GetAttributeValue("title", "0")}]({htmlNode.GetAttributeValue("href", "0")})";
+                postHtmlString = postHtmlString.Remove(firstIndex, lastIndex - firstIndex);
+            }
+        }
+
         static List<string> ParseImage(HtmlDocument htmlDocument)
         {
             List<string> parsedImageUrlArray = new List<string>();
@@ -50,5 +76,30 @@ namespace ConsoleApp33
             }
             return parsedImageUrlArray;
         }
+        static List<string> TextDevidingOnParts(string text)
+        {
+            int counter = 0;
+            char newLine = '\n';
+            string result = "";
+            string resultCount = "";
+            string[] arr = text.Split(newLine);
+            List<string> resultList = new List<string>();
+            while (resultCount.Length < text.Length)
+            {
+                if (result.Length < 4096 && counter < arr.Length)
+                {
+                    result += arr[counter] + newLine;
+                    counter++;
+                }
+                else
+                {
+                    resultList.Add(result.TrimStart(' '));
+                    resultCount += result;
+                    result = "";
+                }
+            }
+            return resultList;
+        }
+
     }
 }
