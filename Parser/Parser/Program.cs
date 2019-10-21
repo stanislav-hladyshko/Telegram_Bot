@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using Telegram.Bot;
 using Telegram.Bot.Types;
+using Newtonsoft.Json;
 
 namespace ConsoleApp33
 {
@@ -17,35 +17,11 @@ namespace ConsoleApp33
             ParserMethod();
             Console.Read();
         }
-        static void TelegraphPostingMethod(HtmlNode contentArg)
-        {
-            var contentList = new List<TelegraphContent>();
-            foreach (var node in contentArg.ChildNodes)
-            {
-                contentList.Add(new TelegraphContent() { tag = new Tag { Name = "p" }, content = new Content() { ChildrenContent = node.InnerText } });
-            }
-
-            string resultContent = "[" + string.Join(",", contentList) + "]";
-
-            var client = new HttpClient();
-
-            var values = new Dictionary<string, string>
-            {
-                { "access_token", "35f1ca3764a3f666392c449bc9918457613949dfc2f252f12ab40c5924be" },
-                { "title", "Sample Page" },
-                { "author_name", "Anonymous" },
-                { "content", resultContent },
-                { "return_content", "true" }
-            };
-            var content = new FormUrlEncodedContent(values);
-            var response = client.PostAsync("https://api.telegra.ph/createPage", content);
-            var responseString = response.Result.Content.ReadAsStringAsync();
-
-        }
         static void ParserMethod()
         {
+            #region
             Console.OutputEncoding = Encoding.UTF8;
-            var url = "https://ru-ru.facebook.com/ulanasuprun/posts/2361155410835679";
+            var url = "https://www.facebook.com/ulanasuprun/posts/2453036978314188";
             HtmlWeb web = new HtmlWeb();
             HtmlDocument loadedPage = web.Load(url);
             string parsingResult = "";
@@ -57,22 +33,84 @@ namespace ConsoleApp33
             parsingResult = parsingResult.Replace("-->", string.Empty);
             parsingResult = parsingResult.Replace("<!--", string.Empty);
             parsingResult = parsingResult.Replace("<br />", "\n");
-
             loadedPage.LoadHtml(parsingResult);
-           // ParseImage(loadedPage);
             HtmlNode post_messageNode = loadedPage.DocumentNode.SelectSingleNode("//div[@data-testid='post_message']");
-            ConvertUrlsToTelegram(post_messageNode);
-
+            #endregion
             string resultOfHtmlParsing = "";
+            ConvertUrlsToTelegram(post_messageNode);
             foreach (HtmlNode node2 in post_messageNode.ChildNodes)
                 resultOfHtmlParsing += node2.InnerText.TrimStart(' ') + newLine;
-            List<TelegraphContent> arr2 = TextOnParts(resultOfHtmlParsing);
-            foreach (var item in arr2)
-            {
-                Console.WriteLine(item.ToString());
-            }
-            Console.Read();
+
+            List<string> imglist = ParseImage(loadedPage);
+
+            string ResultTelegraphContent = post_messageNode.InnerText;
+            TelegramPostingMethod(resultOfHtmlParsing);
+
+            //List<TelegraphContent> arr2 = TextOnParts(resultOfHtmlParsing);
+
+
+            string telegraPHparsingResult = telegraphParserMethod(loadedPage, post_messageNode);
+
         }
+
+        static string telegraphParserMethod(HtmlDocument htmlDocument, HtmlNode htmlNode)
+        {
+            var listOfNodes = new List<Object>();
+            foreach (var node in htmlNode.ChildNodes)
+            {
+                listOfNodes.Add(domToNode(node));
+            }
+            List<string> imageUrls = ParseImage(htmlDocument);// Парсимо зображення методом "ParseImage"
+            foreach (var item in imageUrls)
+            {
+                TelegraphNode imgNode = new TelegraphNode() { tag = "img" };
+                imgNode.attrs = new Dictionary<string, string>();
+                imgNode.attrs["src"] = item;
+                listOfNodes.Add(imgNode);
+            }
+            string output = JsonConvert.SerializeObject(listOfNodes, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+            return output;
+        }
+
+        static void TelegraphPostingMethod(HtmlNode telegraphContent)
+        {
+            var contentList = new List<TelegraphContent>();
+            foreach (var node in telegraphContent.ChildNodes)
+            {
+                contentList.Add(new TelegraphContent() { tag = new Tag { Name = "p" }, content = new Content() { ChildrenContent = node.InnerText } });
+            }
+            string resultContent = "[" + string.Join(",", contentList) + "]";
+
+            Dictionary<string, string> values = new Dictionary<string, string>
+            {
+                { "access_token", "35f1ca3764a3f666392c449bc9918457613949dfc2f252f12ab40c5924be" },
+                { "title", "Sample Page" },
+                { "author_name", "Anonymous" },
+                { "content", resultContent },
+                { "return_content", "true" }
+            };
+            var client = new HttpClient();
+            var content = new FormUrlEncodedContent(values);
+            var response = client.PostAsync("https://api.telegra.ph/createPage", content);
+            var responseString = response.Result.Content.ReadAsStringAsync();
+        }
+        static void TelegramPostingMethod(string telegramContent)
+        {
+            Console.WriteLine();
+            Dictionary<string, string> values = new Dictionary<string, string>
+            {
+                { "chat_id", "@stanislav_hladyshko"},
+             { "parse_mode", "markdown"},
+                { "text", telegramContent },
+                { "disable_web_page_preview", "true"}
+            };
+            var httpClient = new HttpClient();
+            HttpContent content = new FormUrlEncodedContent(values);
+            string telegramToken = "https://api.telegram.org/bot980261769:AAGPe8mb1Cuq4wWPu-JBdFnSC_nr9aW9--k/sendMessage";
+            var response = httpClient.PostAsync(telegramToken, content).Result;
+
+        }
+
         static void ConvertUrlsToTelegram(HtmlNode node)
         {
             HtmlNode newNode = null;
@@ -105,41 +143,6 @@ namespace ConsoleApp33
                 }
             }
         }
-
-        static void ConvertUrlsToTelegraph(HtmlNode node)
-        {
-            HtmlNode newNode = null;
-            foreach (var childNode in node.ChildNodes)
-            {
-                var aTagNodes = childNode.SelectNodes("a");
-                foreach (var item in aTagNodes ?? Enumerable.Empty<HtmlNode>())
-                {
-                    if (item.InnerText.StartsWith("http"))
-                    {
-                        newNode = HtmlNode.CreateNode(item.InnerText);
-                        //newNode = HtmlNode.CreateNode()
-                    }
-                    else if (item.InnerText.StartsWith("#"))
-                    {
-                        var title = item.InnerText;
-                        var url = $"https://www.facebook.com/hashtag/{item.InnerText.Substring(1)}";
-                        newNode = HtmlNode.CreateNode($"[{title}]({url})");
-                    }
-                    else
-                    {
-                        var title = item.InnerText;
-                        var url = item.GetAttributeValue("href", "google.com");
-                        newNode = HtmlNode.CreateNode($"[{title}]({url})");
-                    }
-                    childNode.ReplaceChild(newNode, item);
-                }
-                if (childNode.HasChildNodes)
-                {
-                    ConvertUrlsToTelegraph(childNode);
-                }
-            }
-        }
-
         static List<string> ParseImage(HtmlDocument htmlDocument)
         {
             List<string> parsedImageUrlArray = new List<string>();
@@ -200,6 +203,50 @@ namespace ConsoleApp33
                 //return resultList;
             }
             return resultList;
+        }
+        static object domToNode(HtmlNode node)
+        {
+            if (node.NodeType == HtmlNodeType.Text)
+            {
+                if (node.InnerText.Length == 0)
+                {
+                    return null;
+                }
+                return node.InnerText;
+            }
+
+            if (node.NodeType != HtmlNodeType.Element)
+            {
+                return null;
+            }
+
+            var telegrahpNode = new TelegraphNode();
+            telegrahpNode.tag = node.OriginalName.ToLower();
+
+            var hrefValue = node.GetAttributeValue("href", null);
+            var srcValue = node.GetAttributeValue("src", null);
+            if ((hrefValue != null || srcValue != null) && telegrahpNode.attrs == null)
+            {
+                telegrahpNode.attrs = new Dictionary<string, string>();
+            }
+            if (hrefValue != null)
+            {
+                telegrahpNode.attrs["href"] = hrefValue;
+            }
+            if (srcValue != null)
+            {
+                telegrahpNode.attrs["src"] = srcValue;
+            }
+
+            if (node.ChildNodes.Count > 0)
+            {
+                telegrahpNode.children = new List<object>();
+                foreach (var childNode in node.ChildNodes)
+                {
+                    telegrahpNode.children.Add(domToNode(childNode));
+                }
+            }
+            return telegrahpNode;
         }
     }
 }

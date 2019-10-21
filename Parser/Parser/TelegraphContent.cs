@@ -8,9 +8,9 @@ namespace Parser
 {
     internal class TelegraphContent
     {
-        string taggg = "tag";
         public Tag tag { get; set; }
         public Content content { get; set; }
+        public TelegraphContent child { get; set; } 
         public override string ToString()
         {
             return ($"{{\"{tag.Tg}\":\"{tag.Name}\",\"{content.Children}\":[\"{content.ChildrenContent}\"]}}");
