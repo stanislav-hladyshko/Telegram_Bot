@@ -58,9 +58,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TelegraphContent.cs" />
+    <Compile Include="TelegraphResponse.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TelegraphContent.cs" />
     <Compile Include="TelegraphNode.cs" />
   </ItemGroup>
   <ItemGroup>
