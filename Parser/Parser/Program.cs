@@ -1,14 +1,9 @@
-﻿using HtmlAgilityPack;
-using Parser;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using Telegram.Bot.Types;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Parser;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace ConsoleApp33
 {
