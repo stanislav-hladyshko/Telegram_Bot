@@ -22,7 +22,7 @@ namespace ConsoleApp33
             // Зясувати чи є нові пости.
             // ...
             // Резутат знаходження нового посту це його id:
-            var newPostFacebookId = "2453036978314188";
+            var newPostFacebookId = "2468733370077882";
 
             // Отримуємо одну ноду з вмістом //div[@class = 'hidden_elem'] для парсинуг зображень.
             // Отримуємо другу ноду з вмістом //div[@data-testid='post_message'] для парсинуг тексу.
