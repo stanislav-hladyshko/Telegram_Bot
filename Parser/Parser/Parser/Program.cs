@@ -26,11 +26,12 @@ namespace Parser
         }
         private static readonly AmazonDynamoDBClient dbClient = null;
         private static string accessTelegramToken = Environment.GetEnvironmentVariable("accessTelegramToken");
-
+        private static string accessTelegraphToken = Environment.GetEnvironmentVariable("accessTelegraphToken");
+        private static string dbAccessKey = Environment.GetEnvironmentVariable("db_access_key");
+        private static string dbSecretKey = Environment.GetEnvironmentVariable("db_secret_key");
+        
         static Program()
         {
-            string dbAccessKey = Environment.GetEnvironmentVariable("db_access_key");
-            string dbSecretKey = Environment.GetEnvironmentVariable("db_secret_key");
             var dbCredentials = new BasicAWSCredentials(dbAccessKey, dbSecretKey);
             dbClient = new AmazonDynamoDBClient(dbCredentials, RegionEndpoint.EUCentral1);
         }
@@ -74,7 +75,7 @@ namespace Parser
                     break;
                 }
             }
-            if (newPostFacebookId == null)
+            if (newPostFacebookId == String.Empty)
             {
                 return;
             }
@@ -108,7 +109,6 @@ namespace Parser
             };
             var client = new HttpClient();
             var content = new FormUrlEncodedContent(values);
-            string accessTelegraphToken = Environment.GetEnvironmentVariable("accessTelegraphToken");
             Task<HttpResponseMessage> task = client.PostAsync("https://api.telegra.ph/createPage?access_token=" + accessTelegraphToken, content);
             var responseString = task.Result.Content.ReadAsStringAsync().Result;
 

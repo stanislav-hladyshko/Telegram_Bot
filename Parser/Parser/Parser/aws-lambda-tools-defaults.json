@@ -14,8 +14,9 @@
     "function-memory-size" : 512,
     "function-timeout"     : 15,
     "function-handler"     : "Parser::Parser.Program::Main",
-    "function-name"        : "Main",
+    "function-name"        : "FacebookParser",
     "function-role"        : "arn:aws:iam::451743035085:role/service-role/RepostFacebookPost-role-acg7m0ae",
     "tracing-mode"         : "PassThrough",
-    "function-description"  : ""
+    "function-description" : "",
+    "environment-variables" : ""
 }
