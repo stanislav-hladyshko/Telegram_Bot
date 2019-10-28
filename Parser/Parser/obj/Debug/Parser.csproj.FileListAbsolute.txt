@@ -1,2 +1,0 @@
-C:\Users\Admin\Documents\GitHub\Telegram_Bot\Parser\Parser\bin\Debug\Newtonsoft.Json.dll
-C:\Users\Admin\Documents\GitHub\Telegram_Bot\Parser\Parser\bin\Debug\Newtonsoft.Json.xml

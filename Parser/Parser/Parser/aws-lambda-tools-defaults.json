@@ -1,0 +1,22 @@
+
+{
+    "Information" : [
+        "This file provides default values for the deployment wizard inside Visual Studio and the AWS Lambda commands added to the .NET Core CLI.",
+        "To learn more about the Lambda commands with the .NET Core CLI execute the following command at the command line in the project root directory.",
+        "dotnet lambda help",
+        "All the command line options for the Lambda command can be specified in this file."
+    ],
+    "profile"     : "st",
+    "region"      : "eu-central-1",
+    "configuration" : "Debug",
+    "framework"     : "netcoreapp2.1",
+    "function-runtime" : "dotnetcore2.1",
+    "function-memory-size" : 512,
+    "function-timeout"     : 15,
+    "function-handler"     : "Parser::Parser.Program::Main",
+    "function-name"        : "SymchyshynParsing",
+    "function-role"        : "arn:aws:iam::451743035085:role/service-role/RepostFacebookPost-role-acg7m0ae",
+    "tracing-mode"         : "PassThrough",
+    "environment-variables" : "\"db_access_key\"=\"aJ0jrsPwRr3YLG8EW3zEy10yIznp7HPbHNBfLze8\";\"accessTelegramToken\"=\"bot1038385957:AAGcwjCHv8GZ7QfNSqb4wA_ONC71OfI-XTM\";\"accessTekegraphToken\"=\"18d2fc0e0504b561589f703bb650b2fe5558e60bb649d6a61c9fafea1b46\";\"db_secret_key\"=\"AKIAWSLP3V3G2BKGQ3UX\"",
+    "function-description"  : ""
+}
