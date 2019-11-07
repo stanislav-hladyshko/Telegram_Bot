@@ -29,7 +29,6 @@ namespace Parser
         private static string accessTelegraphToken = Environment.GetEnvironmentVariable("accessTelegraphToken");
         private static string dbAccessKey = Environment.GetEnvironmentVariable("db_access_key");
         private static string dbSecretKey = Environment.GetEnvironmentVariable("db_secret_key");
-        
         static Program()
         {
             var dbCredentials = new BasicAWSCredentials(dbAccessKey, dbSecretKey);

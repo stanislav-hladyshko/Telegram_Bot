@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace Parser
 {
@@ -12,13 +13,15 @@ namespace Parser
         public string TelegramContent { get; set; }
         public string TelegraphContent { get; set; }
         public List<string> ImageUrls { get; set; }
+        public readonly string url = "";
 
         public Post(string FbPostId)
         {
             Id = FbPostId;
+            url = "https://www.facebook.com/ulanasuprun/posts/" + Id;
             ProcessParsingPost();
         }
-        void ProcessParsingPost()
+        private void ProcessParsingPost()
         {
             var (htmlNodeForImagesParsing, htmlNodeForTextParsing) = GetHtmlNodesForImageAndText();
 
@@ -30,17 +33,15 @@ namespace Parser
             ImageUrls = ParseImageForInlineMarkdown(htmlNodeForImagesParsing);
             foreach (HtmlNode node in telegramMarkdownNode.ChildNodes)
                 TelegramContent += node.InnerText.TrimStart(' ') + "\n";
-
+            TelegramContent = TelegramContent.Insert(0, $"[Джерело]({url})\n");
             TelegraphContent = TelegraphParserMethod(images, htmlNodeForTextParsing);
         }
-        (HtmlNode htmlNodeForImagesParsing, HtmlNode htmlNodeForTextParsing) GetHtmlNodesForImageAndText()
+        private (HtmlNode htmlNodeForImagesParsing, HtmlNode htmlNodeForTextParsing) GetHtmlNodesForImageAndText()
         {
-            var url = "https://www.facebook.com/ulanasuprun/posts/" + Id;
             HtmlDocument loadedFacebookPage = new HtmlWeb().Load(url);
             string parsingResult = "";
             string newLine = "\n";
             HtmlNodeCollection htmlNodes = loadedFacebookPage.DocumentNode.SelectNodes("//div[@class = 'hidden_elem']");
-            string a = loadedFacebookPage.DocumentNode.ChildNodes.ToString();
             foreach (HtmlNode node in htmlNodes)
                 parsingResult += newLine + node.InnerHtml;
             parsingResult = parsingResult.Replace("-->", string.Empty);
@@ -50,9 +51,18 @@ namespace Parser
             HtmlNode postMessageNode = loadedFacebookPage.DocumentNode.SelectSingleNode("//div[@data-testid='post_message']");
             return (loadedFacebookPage.DocumentNode, postMessageNode);
         }
-        static string TelegraphParserMethod(List<string> imageUrls, HtmlNode htmlNode)
+        private string TelegraphParserMethod(List<string> imageUrls, HtmlNode htmlNode)
         {
             var listOfNodes = new List<Object>();
+            TelegraphNode urlPNode = new TelegraphNode() { tag = "p" };
+            urlPNode.children = new List<object>();
+            TelegraphNode urlNode = new TelegraphNode() { tag = "a" };
+            urlNode.attrs = new Dictionary<string, string>();
+            urlNode.attrs["href"] = url;
+            urlNode.children = new List<object>();
+            urlNode.children.Add("Джерело");
+            urlPNode.children.Add(urlNode);
+            listOfNodes.Add(urlPNode);
             foreach (var node in htmlNode.ChildNodes)
             {
                 listOfNodes.Add(DomObjectsToNodeObjectsConvernet(node));
@@ -67,7 +77,7 @@ namespace Parser
             string output = JsonConvert.SerializeObject(listOfNodes, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
             return output;
         }
-        static List<string> ParseImageForInlineMarkdown(HtmlNode htmlNode)
+        private static List<string> ParseImageForInlineMarkdown(HtmlNode htmlNode)
         {
             HtmlNode imageNodes = htmlNode;
             List<string> parsedImageUrlArray = new List<string>();
@@ -82,7 +92,7 @@ namespace Parser
             string output = JsonConvert.SerializeObject(parsedImageUrlArray, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
             return parsedImageUrlArray;
         }
-        static void ConvertUrlsToTelegramMarkdown(HtmlNode node)
+        private static void ConvertUrlsToTelegramMarkdown(HtmlNode node)
         {
             HtmlNode newNode = null;
             foreach (var childNode in node.ChildNodes)
@@ -114,7 +124,7 @@ namespace Parser
                 }
             }
         }
-        static object DomObjectsToNodeObjectsConvernet(HtmlNode node)
+        private static object DomObjectsToNodeObjectsConvernet(HtmlNode node)
         {
             if (node.NodeType == HtmlNodeType.Text)
             {
@@ -122,14 +132,13 @@ namespace Parser
                 {
                     return null;
                 }
-                return node.InnerText;
+                return WebUtility.HtmlDecode(node.InnerText);
             }
 
             if (node.NodeType != HtmlNodeType.Element)
             {
                 return null;
             }
-
             var telegrahpNode = new TelegraphNode();
             telegrahpNode.tag = node.OriginalName.ToLower();
 
