@@ -12,7 +12,7 @@
     "framework"     : "netcoreapp2.1",
     "function-runtime" : "dotnetcore2.1",
     "function-memory-size" : 256,
-    "function-timeout"     : 50,
+    "function-timeout"     : 60,
     "function-handler"     : "Parser::Parser.Program::Main",
     "function-name"        : "FacebookParser",
     "function-role"        : "arn:aws:iam::451743035085:role/service-role/RepostFacebookPost-role-acg7m0ae",
